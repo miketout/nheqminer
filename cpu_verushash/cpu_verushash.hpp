@@ -37,7 +37,7 @@ struct cpu_verushash
 
 	std::string getname()
 	{ 
-		return "VerusHash 2.0 - CPU";
+		return "VerusHash 2.1 - CPU";
 	}
 
 	CVerusHashWriter *pVHW;
