@@ -1,11 +1,10 @@
 stages:
 - build
 variables:
-  VERSION: 0.7.1
+  VERSION: 0.8.1
   POST_MESSAGE: "Pipeline Trigger: ${CI_PIPELINE_SOURCE}\n
   Branch: ${CI_COMMIT_REF_NAME}\n
   Commit: ${CI_COMMIT_SHA}\n
-  Author:  ${GITLAB_USER_NAME} <${GITLAB_USER_EMAIL}>\n
   ${CI_COMMIT_MESSAGE}"
 
 build:linux:
@@ -19,24 +18,31 @@ build:linux:
   - cmake -DUSE_CUDA_DJEZO=0 -DUSE_CPU_XENONCAT=0 ..
   - make -j$(nproc)
   - mkdir -p build/nheqminer
-  - cp ../doc/Linux/Readme.txt build/nheqminer
-  - cp nheqminer build/nheqminer
+  - cp ../doc/Linux/Readme.txt
+      ../scripts/start.sh
+      nheqminer
+      build/nheqminer
   - cd build
   - chmod +x nheqminer/nheqminer
+      nheqminer/start.sh
   - if [ "${CI_COMMIT_REF_NAME}" = "master" ]; then strip -g nheqminer/nheqminer; fi
   - tar -czf nheqminer-Linux-v${VERSION}.tar.gz nheqminer
+  - sha256sum nheqminer-Linux-v${VERSION}.tar.gz > nheqminer-Linux-v${VERSION}.tar.gz.sha256
   - curl -F file=@nheqminer-Linux-v${VERSION}.tar.gz
       -F channels="$CPU_POOL_POST_CHANNEL"
       -F initial_comment="${POST_MESSAGE}"
       -H "${SLACK_BOT_AUTH}"
       "https://slack.com/api/files.upload"
+  - mv nheqminer-Linux-v${VERSION}.tar.gz nheqminer-Linux-v${VERSION}.tar.gz.sha256 ../..
   artifacts:
-    paths: ["build/build/nheqminer"]
+    paths:
+      - nheqminer-Linux-v${VERSION}.tar.gz
+      - nheqminer-Linux-v${VERSION}.tar.gz.sha256
     expire_in: 1 week
 
 
 build:macos:
-  tags: ["High Sierra"]
+  tags: ["Mojave"]
   variables:
     CXX: g++-8
     CC: gcc-8
@@ -46,20 +52,27 @@ build:macos:
   - cmake -DUSE_CUDA_DJEZO=0 -DUSE_CPU_XENONCAT=0 ..
   - make -j$(sysctl -n hw.physicalcpu)
   - mkdir -p build/nheqminer
-  - cp ../doc/Mac/Readme.txt build/nheqminer
-  - cp nheqminer build/nheqminer
+  - cp ../doc/Mac/Readme.txt
+      ../scripts/start.sh
+      nheqminer
+      build/nheqminer
   - cd build
   - DYLIBS=`otool -L nheqminer/nheqminer | grep "/usr/local" | awk -F' ' '{ print $1 }'`
   - for dylib in $DYLIBS; do cp -rf $dylib Nheqminer/; done
   - for dylib in $DYLIBS; do install_name_tool -change $dylib @executable_path/`basename $dylib` nheqminer/nheqminer; done;
   - chmod +x nheqminer/nheqminer
+  - chmod +x nheqminer/start.sh
   - if [ "${CI_COMMIT_REF_NAME}" = "master" ]; then strip nheqminer/nheqminer; fi
   - tar -czf nheqminer-MacOS-v${VERSION}.tar.gz nheqminer
+  - shasum -a 256 nheqminer-MacOS-v${VERSION}.tar.gz > nheqminer-MacOS-v${VERSION}.tar.gz.sha256
   - curl -F file=@nheqminer-MacOS-v${VERSION}.tar.gz
       -F channels="$CPU_POOL_POST_CHANNEL"
       -F initial_comment="${POST_MESSAGE}"
       -H "${SLACK_BOT_AUTH}"
       "https://slack.com/api/files.upload"
+  - mv nheqminer-MacOS-v${VERSION}.tar.gz nheqminer-MacOS-v${VERSION}.tar.gz.sha256 ../..
   artifacts:
-    paths: ["build/build/nheqminer"]
+    paths:
+    - nheqminer-MacOS-v${VERSION}.tar.gz
+    - nheqminer-MacOS-v${VERSION}.tar.gz.sha256
     expire_in: 1 week

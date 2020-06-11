@@ -1,5 +1,5 @@
-VerusCoin nheqminer v0.7.1
-Using VerusHash v2.0
+VerusCoin nheqminer v0.8.1
+Using VerusHash v2.2
 
 This software needs to be run on a terminal. From the start menu, type cmd and press enter to open a command prompt.
 
@@ -42,12 +42,7 @@ Example to run benchmark on your CPU:
 
 Example to mine on your CPU with your own VRSC address and worker1 on Stratum USA server:
 
-        nheqminer -v -l us-veruscoin.miningpools.cloud:2052 -u YOUR_VRSC_ADDRESS_HERE.worker1
+        nheqminer -v -l poolhost:port -u YourPublicVerusCoinAddress.newuser -p x -t 4
 
-Example to mine on your CPU with your own VRSC address and worker1 on Stratum Asia server, using 6 threads:
+Open and edit the start.bat script to save your preferred configuration
 
-        nheqminer -v -l asia-veruscoin.miningpools.cloud:2052 -u YOUR_VRSC_ADDRESS_HERE.worker1 -t 6
-
-Example to mine on your CPU with your own VRSC address and worker1 on Stratum EU server, using all threads:
-
-        nheqminer -v -l veruscoin.miningpools.cloud:2052 -u YOUR_VRSC_ADDRESS_HERE.worker1 -t %NUMBER_OF_PROCESSORS%

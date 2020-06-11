@@ -37,7 +37,7 @@ struct cpu_verushash
 
 	std::string getname()
 	{ 
-		return "VerusHash 2.0 - CPU";
+		return "VerusHash - CPU";
 	}
 
 	cpu_verushash(int solutionVer = SOLUTION_VERUSHHASH_V2) : solutionVer(solutionVer) {}

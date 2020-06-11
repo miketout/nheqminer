@@ -68,6 +68,8 @@ extern u128 rc[40];
   s2 = _mm_aesenc_si128(s2, rc[rci + 6]); \
   s3 = _mm_aesenc_si128(s3, rc[rci + 7]); \
 
+
+
 #define AES4_zero(s0, s1, s2, s3, rci) \
   s0 = _mm_aesenc_si128(s0, rc0[rci]); \
   s1 = _mm_aesenc_si128(s1, rc0[rci + 1]); \

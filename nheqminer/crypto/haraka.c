@@ -30,6 +30,9 @@ Optimized Implementations for Haraka256 and Haraka512
 u128 rc[40];
 u128 rc0[40] = {0};
 
+typedef unsigned long uint64_t;
+typedef unsigned int uint32_t;
+
 void load_constants() {
   rc[0] = _mm_set_epi32(0x0684704c,0xe620c00a,0xb2c5fef0,0x75817b9d);
   rc[1] = _mm_set_epi32(0x8b66b4e1,0x88f3a06b,0x640f6ba4,0x2f08f717);
@@ -394,6 +397,8 @@ void haraka512(unsigned char *out, const unsigned char *in) {
   TRUNCSTORE(out, s[0], s[1], s[2], s[3]);
 }
 
+
+
 void haraka512_zero(unsigned char *out, const unsigned char *in) {
   u128 s[4], tmp;
 
@@ -401,7 +406,7 @@ void haraka512_zero(unsigned char *out, const unsigned char *in) {
   s[1] = LOAD(in + 16);
   s[2] = LOAD(in + 32);
   s[3] = LOAD(in + 48);
-
+  uint64_t final = ((uint64_t*)&s[3])[0];
   AES4_zero(s[0], s[1], s[2], s[3], 0);
   MIX4(s[0], s[1], s[2], s[3]);
 
@@ -423,7 +428,16 @@ void haraka512_zero(unsigned char *out, const unsigned char *in) {
   s[3] = _mm_xor_si128(s[3], LOAD(in + 48));
 
   TRUNCSTORE(out, s[0], s[1], s[2], s[3]);
+ 
 }
+#define MIX4_LAST(s0, s1, s2, s3) \
+  tmp  = _mm_unpacklo_epi32(s0, s1); \
+  s1 = _mm_unpacklo_epi32(s2, s3); \
+  s2 = _mm_unpackhi_epi32(s1, tmp); 
+
+  #define AES4_LAST(s0, s1, s2, s3, rci) \
+  s2 = _mm_aesenc_si128(s2, rc[rci + 2]); \
+  s2 = _mm_aesenc_si128(s2, rc[rci + 6]); 
 
 void haraka512_keyed(unsigned char *out, const unsigned char *in, const u128 *rc) {
   u128 s[4], tmp;
@@ -432,7 +446,7 @@ void haraka512_keyed(unsigned char *out, const unsigned char *in, const u128 *rc
   s[1] = LOAD(in + 16);
   s[2] = LOAD(in + 32);
   s[3] = LOAD(in + 48);
-
+  uint64_t final = ((uint64_t*)&s[3])[0];
   AES4(s[0], s[1], s[2], s[3], 0);
   MIX4(s[0], s[1], s[2], s[3]);
 
@@ -443,17 +457,16 @@ void haraka512_keyed(unsigned char *out, const unsigned char *in, const u128 *rc
   MIX4(s[0], s[1], s[2], s[3]);
 
   AES4(s[0], s[1], s[2], s[3], 24);
-  MIX4(s[0], s[1], s[2], s[3]);
+  MIX4_LAST(s[0], s[1], s[2], s[3]);
 
-  AES4(s[0], s[1], s[2], s[3], 32);
-  MIX4(s[0], s[1], s[2], s[3]);
+  AES4_LAST(s[0], s[1], s[2], s[3], 32);
 
-  s[0] = _mm_xor_si128(s[0], LOAD(in));
-  s[1] = _mm_xor_si128(s[1], LOAD(in + 16));
-  s[2] = _mm_xor_si128(s[2], LOAD(in + 32));
-  s[3] = _mm_xor_si128(s[3], LOAD(in + 48));
+ // s[0] = _mm_xor_si128(s[0], LOAD(in));
+ // s[1] = _mm_xor_si128(s[1], LOAD(in + 16));
+ // s[2] = _mm_xor_si128(s[2], LOAD(in + 32));
+ ((uint32_t*)&out[0])[6] = 0xffffffff;
+ ((uint32_t*)&out[0])[7] = ((uint32_t*)&s[0])[10] ^ ((uint32_t*)&in[52])[0];
 
-  TRUNCSTORE(out, s[0], s[1], s[2], s[3]);
 }
 
 void haraka512_4x(unsigned char *out, const unsigned char *in) {

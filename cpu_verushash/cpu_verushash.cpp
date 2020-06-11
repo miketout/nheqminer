@@ -102,7 +102,7 @@ void cpu_verushash::solve_verus_v2(CBlockHeader &bh,
     }
 
 	std::vector<unsigned char> solution = std::vector<unsigned char>();
-    if (device_context.solutionVer < 4)
+    if (device_context.solutionVer < 5)
     {
         solution = std::vector<unsigned char>(1344);
         solution[0] = device_context.solutionVer;
