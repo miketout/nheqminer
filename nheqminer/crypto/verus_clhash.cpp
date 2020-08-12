@@ -359,7 +359,7 @@ void cpu_verushash::solve_verus_v2_opt(CBlockHeader &bh,
         device_context.solutionVer = bh.nSolution[0];
         device_context.start(device_context);
     }
-    if (device_context.solutionVer < 5)
+    if (device_context.solutionVer < 6)
     {
         bh.nSolution = std::vector<unsigned char>(1344);
         bh.nSolution[0] = device_context.solutionVer;

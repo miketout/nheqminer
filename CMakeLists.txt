@@ -1,7 +1,7 @@
 project(nheqminer)
 cmake_minimum_required(VERSION 3.5)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ") # -Wall
+set(BUILD_ARCH "x86-64")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC ") # -Wall
 ## Enable solvers here
 #### older slower
 option(USE_CPU_TROMP "USE CPU_TROMP" OFF)
@@ -33,39 +33,22 @@ if (USE_CUDA_DJEZO)
     message("-- USE_CUDA_DJEZO DEFINED")
 endif()
 
+# optimizations
+add_definitions(-O3)
 
 ########
-# LINUX
-if(CMAKE_COMPILER_IS_GNUCXX)
-    # use native cpu features
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=x86-64 -mpclmul -msse2 -msse3 -mssse3 -msse4 -msse4.1 -msse4.2 -maes -g -fomit-frame-pointer -fPIC")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=x86-64 -mpclmul -msse2 -msse3 -mssse3 -msse4 -msse4.1 -msse4.2 -maes -g -fomit-frame-pointer -fPIC")
+# use native cpu features
 
-    # optimizations
-    add_definitions(-O2)
-
-endif()
-
-# MACOS
-if(APPLE)
-    if(CMAKE_COMPILER_IS_GNUCXX)
-        # use native cpu features
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m64 -mpclmul -msse2 -msse3 -mssse3 -msse4 -msse4.1 -msse4.2 -maes -g -fomit-frame-pointer -fPIC" )
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64 -mpclmul -msse2 -msse3 -mssse3 -msse4 -msse4.1 -msse4.2 -maes -g -fomit-frame-pointer -fPIC")
-        include_directories(${nheqminer_SOURCE_DIR}/nheqminer/compat)
-        # optimizations
-        add_definitions(-O2)
-    endif()
-endif(APPLE)
-
-set_source_files_properties(${nheqminer_SOURCE_DIR}/nheqminer/crypto/verus_clhash_portable.cpp PROPERTIES COMPILE_FLAGS "-mno-sse4 -mno-sse4.1 -mno-sse4.2 -g")
-set_source_files_properties(${nheqminer_SOURCE_DIR}/nheqminer/crypto/haraka_portable.c PROPERTIES COMPILE_FLAGS "-mno-sse4 -mno-sse4.1 -mno-sse4.2 -g")
-set_source_files_properties(${nheqminer_SOURCE_DIR}/nheqminer/crypto/verus_clhash.cpp PROPERTIES COMPILE_FLAGS "-mavx -g")
-set_source_files_properties(${nheqminer_SOURCE_DIR}/nheqminer/crypto/haraka.c PROPERTIES COMPILE_FLAGS "-mavx -g")
+set_source_files_properties(${nheqminer_SOURCE_DIR}/nheqminer/crypto/verus_clhash.cpp PROPERTIES COMPILE_FLAGS " -m64 -mavx -mpclmul -msse2 -msse3 -mssse3 -msse4 -msse4.1 -msse4.2 -maes  -funroll-loops -fomit-frame-pointer")
+set_source_files_properties(${nheqminer_SOURCE_DIR}/nheqminer/crypto/verus_hash.cpp PROPERTIES COMPILE_FLAGS "   -m64 -mavx -mpclmul -msse2 -msse3 -mssse3 -msse4 -msse4.1 -msse4.2 -maes  -funroll-loops -fomit-frame-pointer")
+set_source_files_properties(${nheqminer_SOURCE_DIR}/nheqminer/crypto/haraka.c PROPERTIES COMPILE_FLAGS "         -m64 -mavx -mpclmul -msse2 -msse3 -mssse3 -msse4 -msse4.1 -msse4.2 -maes  -funroll-loops -fomit-frame-pointer")
 
 # Common
 include_directories(${nheqminer_SOURCE_DIR}/nheqminer)
-
+# MACOS
+if(APPLE)
+    include_directories(${nheqminer_SOURCE_DIR}/nheqminer/compat)
+endif(APPLE)
 # BOOST
 #find_package(Threads REQUIRED COMPONENTS)
 # compile boost staticaly
@@ -76,7 +59,7 @@ set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
 find_package(Boost REQUIRED COMPONENTS system log_setup log date_time filesystem thread)
 
 if (Boost_FOUND)
-  # From the offical documentation:
+  # From the official documentation:
   # Add include directories to the build. [...] If the SYSTEM option is given,
   # the compiler will be told the directories are meant as system include
   # directories on some platforms (signalling this setting might achieve effects

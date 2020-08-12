@@ -15,7 +15,7 @@ build:linux:
   before_script:
   script:
   - mkdir build && cd build
-  - cmake -DUSE_CUDA_DJEZO=0 -DUSE_CPU_XENONCAT=0 ..
+  - cmake ..
   - make -j$(nproc)
   - mkdir -p build/nheqminer
   - cp ../doc/Linux/Readme.txt
@@ -49,7 +49,7 @@ build:macos:
   stage: build
   script:
   - mkdir build && cd build
-  - cmake -DUSE_CUDA_DJEZO=0 -DUSE_CPU_XENONCAT=0 ..
+  - cmake ..
   - make -j$(sysctl -n hw.physicalcpu)
   - mkdir -p build/nheqminer
   - cp ../doc/Mac/Readme.txt
@@ -57,8 +57,8 @@ build:macos:
       nheqminer
       build/nheqminer
   - cd build
-  - DYLIBS=`otool -L nheqminer/nheqminer | grep "/usr/local" | awk -F' ' '{ print $1 }'`
-  - for dylib in $DYLIBS; do cp -rf $dylib Nheqminer/; done
+  - DYLIBS=`otool -L nheqminer/nheqminer | awk -F' ' '{ print $1 }'`
+  - for dylib in $DYLIBS; do cp -rf $dylib nheqminer/; done
   - for dylib in $DYLIBS; do install_name_tool -change $dylib @executable_path/`basename $dylib` nheqminer/nheqminer; done;
   - chmod +x nheqminer/nheqminer
   - chmod +x nheqminer/start.sh

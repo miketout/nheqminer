@@ -102,16 +102,16 @@ void cpu_verushash::solve_verus_v2(CBlockHeader &bh,
     }
 
 	std::vector<unsigned char> solution = std::vector<unsigned char>();
-    if (device_context.solutionVer < 5)
+    if (device_context.solutionVer < 6)
     {
         solution = std::vector<unsigned char>(1344);
         solution[0] = device_context.solutionVer;
-		bh.nSolution = solution;
+        bh.nSolution = solution;
     }
 	else
-	{
-		solution = bh.nSolution = solution;
-	}
+    {
+        solution = bh.nSolution = solution;
+    }
 
 	CVerusHashV2bWriter &vhw = *(device_context.pVHW2b);
 	CVerusHashV2 &vh = vhw.GetState();

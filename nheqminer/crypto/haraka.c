@@ -30,8 +30,7 @@ Optimized Implementations for Haraka256 and Haraka512
 u128 rc[40];
 u128 rc0[40] = {0};
 
-typedef unsigned long uint64_t;
-typedef unsigned int uint32_t;
+#include <stdint.h>
 
 void load_constants() {
   rc[0] = _mm_set_epi32(0x0684704c,0xe620c00a,0xb2c5fef0,0x75817b9d);
